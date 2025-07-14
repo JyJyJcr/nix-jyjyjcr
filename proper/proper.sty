@@ -1,0 +1,422 @@
+% properパッケージ: 適切なパッケージロードを提供します
+\ProvidesPackage{proper}
+
+%前提機能
+\@namedef{proper@log}#1{%
+	\relax
+	%\PackageWarning{proper}{#1}{}
+}
+\RequirePackage{etoolbox}
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions {%
+	family=proper@@option,
+	prefix=proper@@option@
+}
+
+
+
+% サブパッケージ
+\@namedef{proper@ifDefined}#1#2#3{%
+	\@ifundefined{proper@@module@#1@script}{#3}{#2}
+}
+\@namedef{proper@assertDefined}#1{%
+	\proper@ifDefined{#1}{%
+		\relax
+	}{%
+		\PackageError{proper}{module #1 is not defined}{}
+	}
+}
+\@namedef{proper@assertUndefined}#1{%
+	\proper@ifDefined{#1}{%
+		\PackageError{proper}{module #1 is already defined}{}
+	}{%
+		\relax
+	}
+}
+
+
+\@namedef{proper@activate}#1{%
+	\csname proper@@module@#1@activate\endcsname
+}
+\@namedef{proper@activateAll}#1{%
+	\renewcommand*{\do}[1]{\proper@activate{##1}}
+	\docsvlist{#1}
+}
+
+\@namedef{proper@ifActivated}#1#2#3{%
+	\proper@assertDefined{#1}
+	\@ifundefined{proper@@module@#1@isActivated}{#3}{#2}
+}
+
+\@namedef{proper@option}#1{%
+	\@ifundefined{proper@@module@#1@option}{}{\csname proper@@module@#1@option\endcsname}
+}
+\@namedef{proper@ifHasOption}#1#2#3{%
+	\proper@assertDefined{#1}
+	\@ifundefined{proper@@module@#1@option}{#3}{#2}
+}
+
+
+% サブパッケージリスト SubList@proper
+\@namedef{proper@define}#1#2#3{%
+	\proper@log{module #1 defining}
+	\proper@assertUndefined{#1}
+	\renewcommand*{\do}[1]{\proper@assertDefined{##1}}
+	\docsvlist{#2}
+	
+	%リスト登録
+	
+	%定義 proper@def@~
+	\@namedef{proper@@module@#1@script}{%
+		\proper@log{module #1 evaluating}
+		#3
+		\proper@log{module #1 evaluated}
+	}
+	\listadd{\proper@moduleList}{#1}
+	
+	%有効化 Activate@~@proper
+	\@namedef{proper@@module@#1@activate}{%
+		\proper@ifActivated{#1}{%
+			\proper@log{module #1 activated again (ignored)}
+		}{%
+			\proper@log{module #1 activating}
+			\proper@activateAll{#2}
+			\@namedef{proper@@module@#1@isActivated}{ACTIVATED}
+			\proper@log{module #1 activated}
+		}
+	}
+	%\define@key{proper}{#1}[]{}
+	\DeclareStringOption{#1}[]
+	\AddToKeyvalOption*{#1}{%
+		\proper@activate{#1}
+		\@namedef{proper@@module@#1@option}{\csname proper@@option@#1\endcsname}
+	}
+	
+	\proper@log{module #1 defined}
+}
+
+
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
+
+
+% \proper@define{名前}{依存先}{コード}で定義
+% フォーマットに含めない部分(生成時情報が必要なもの)は\AtEndPreamble{}に入れる
+
+% 条件式
+\proper@define{logic}{}{%
+	\RequirePackage{ifthen}
+}
+% UUID生成
+\proper@define{uuid}{}{%
+	\RequirePackage{uuid}
+}
+% 時刻
+\proper@define{time}{uuid}{%
+	\RequirePackage{datetime2}
+	\newcommand{\DTMdisplaypdfdata}[1]{%
+		\edef\DTMtmpsavename{\UUID}%
+		\DTMsavefrompdfdata{\DTMtmpsavename}{##1}%
+		\DTMuse{\DTMtmpsavename}%
+	}
+	\newcommand{\DTMDisplaypdfdata}[1]{%
+		\edef\DTMtmpsavename{\UUID}%
+		\DTMsavefrompdfdata{\DTMtmpsavename}{##1}%
+		\DTMUse{\DTMtmpsavename}%
+	}
+}
+
+% フォーマット経由に対応したファイル分割
+\proper@define{module}{}{
+	\RequirePackage{subfiles}
+}
+% pdfの紙面サイズを正しく設定
+\proper@define{paper}{}{
+	\RequirePackage{bxpapersize}
+	%geometryが先行していたら無視される
+	\PassOptionsToPackage{truedimen,left=10truemm,right=10truemm,top=10truemm,bottom=20truemm}{geometry}
+	\RequirePackage{geometry}
+}
+% lmodernとotfを用いる(T2Aのlmodernはないのでcmodernになるらしいが愛嬌)
+\proper@define{font}{}{
+	\RequirePackage[deluxe,noreplace]{otf}
+	\RequirePackage[prefernoncjk]{pxcjkcat}
+	\cjkcategory{latn1}{noncjk}
+	\cjkcategory{sym18}{cjk}
+	\RequirePackage[T2A,T1]{fontenc}
+	\RequirePackage{lmodern}
+}
+%\proper@define{toc}{font}{
+%	\RequirePackage{titiletoc}
+%}
+
+
+\proper@define{headoid}{}{
+	\newcommand{\chapteroid}[1]{
+		\chapter*{##1}
+		\addcontentsline{toc}{chapter}{##1}
+	}
+	\newcommand{\sectionoid}[1]{
+		\section*{##1}
+		\addcontentsline{toc}{section}{##1}
+	}
+	\newcommand{\subsectionoid}[1]{
+		\subsection*{##1}
+		\addcontentsline{toc}{subsection}{##1}
+	}
+}
+\proper@define{deco}{}{
+	\RequirePackage{enumerate}
+	\RequirePackage{xcolor}
+	\RequirePackage{ulem}
+	\RequirePackage{pxrubrica}
+}
+\proper@define{format}{}{
+	\RequirePackage{ascmac}
+	\RequirePackage{multicol}
+	\RequirePackage{tcolorbox}
+	\setlength{\columnsep}{5mm}
+	\columnseprule=0mm
+	\RequirePackage{epigraph}
+	\setlength{\epigraphwidth}{0.8\columnwidth}
+}
+
+\proper@define{math}{}{
+	%scale big operator
+	\RequirePackage{exscale}
+	%amsmaths
+	\RequirePackage{amsmath,amssymb,amsfonts}
+	\RequirePackage{mathtools}
+	% additional symbols
+	\RequirePackage{latexsym}
+	% cancel diag line
+	\RequirePackage{cancel}
+	%env for system of equations
+	\RequirePackage{empheq}
+	% easy parentheses
+	\RequirePackage{bm}
+	\RequirePackage{physics2}
+	\usephysicsmodule{ab}
+	\RequirePackage{derivative}
+	% famous sets' abbreviations
+	\newcommand{\Nset}{\mathbb{N}}
+	\newcommand{\Zset}{\mathbb{Z}}
+	\newcommand{\Rset}{\mathbb{R}}
+	\newcommand{\Cset}{\mathbb{C}}
+	% such that
+	\newcommand{\suchthat}{s.t.}
+	% identity and isomorphism
+	\DeclareMathOperator{\id}{id}
+	\DeclareMathOperator{\Aut}{Aut}
+	% calculus
+	\newcommand{\del}{{\partial}}
+	\DeclareMathOperator{\arsinh}{arsinh}
+	\DeclareMathOperator{\arcosh}{arcosh}
+	\newcommand{\oointv}[2]{\left(##1,\,##2\right)}
+	\newcommand{\ccintv}[2]{\left[##1,\,##2\right]}
+	\newcommand{\cointv}[2]{\left[##1,\,##2\right)}
+	\newcommand{\ocintv}[2]{\left(##1,\,##2\right]}
+	\renewcommand{\Re}{\mathrm{Re}}
+	\renewcommand{\Im}{\mathrm{Im}}
+	% linear algebra
+	\newcommand{\ve}[1]{\bm{##1}}
+	\DeclareMathOperator{\Ker}{Ker}
+	\DeclareMathOperator{\Img}{Im}
+	\DeclareMathOperator{\tr}{tr}
+	%\DeclareMathOperator{\rank}{rank}
+	\DeclareMathOperator{\sign}{sign}	
+	\renewcommand{\tilde}[1]{\widetilde{##1}}
+	\newcommand{\vect}[1]{\overrightarrow{##1}}
+	\newcommand{\trans}[1]{##1^T}
+	\newcommand{\conj}[1]{##1^*}
+	\newcommand{\adj}[1]{##1^\dagger}
+	\DeclareMathOperator{\diag}{diag}
+	%\newcommand{\norm}[1]{\left\|#1\right\|}
+	\newcommand{\mat}[1]{\begin{pmatrix}##1\end{pmatrix}}
+	\newcommand{\mabs}[1]{\abs{\mat{##1}}}
+	\newcommand{\pmat}[1]{\begin{pmatrix}##1\end{pmatrix}}
+	\usephysicsmodule{diagmat}
+	\usephysicsmodule{xmat}
+	\RequirePackage{tensor}
+}
+\proper@define{sci-old}{math}{
+	\RequirePackage[binary-units]{siunitx}
+	\usephysicsmodule{braket}
+}
+\proper@define{sci}{math}{
+	\RequirePackage[binary-units]{siunitx}
+	\usephysicsmodule{ab.braket}
+	\newcommand{\comm}[2]{\ab[{##1},{##2}]}
+	\newcommand{\acomm}[2]{\ab\{{##1},{##2}\}}
+	\RequirePackage{mhchem}
+}
+
+
+\proper@define{code}{}{
+	\RequirePackage{listings}
+	%\RequirePackage{jvlisting}
+	\lstset{
+		basicstyle={\ttfamily},
+		identifierstyle={\small},
+		commentstyle={\small},
+		keywordstyle={\small\bfseries},
+		ndkeywordstyle={\small},
+		stringstyle={\small\ttfamily},
+		%frame={tb},
+		breaklines=true,
+		columns=[l]{fullflexible},
+		numbers=left,
+		xrightmargin=1zw,
+		xleftmargin=1zw,
+		numberstyle={\scriptsize},
+		stepnumber=1,
+		numbersep=1zw,
+		lineskip=-0.5ex,
+  		frame=single
+	}
+	\renewcommand{\lstlistingname}{ソースxコード}
+}
+
+\proper@define{float}{}{
+	\RequirePackage{here}
+	\RequirePackage{caption}
+	\RequirePackage{subcaption}
+}
+\proper@define{table}{float}{
+	% big table
+	\RequirePackage{longtable}
+}
+\proper@define{figure}{float}{
+	% include image
+	\RequirePackage{graphicx}
+	\RequirePackage{adjustbox}
+	% tikz (2d plot)
+	\RequirePackage{tikz}
+	\usetikzlibrary {arrows.meta}
+	\usetikzlibrary {bending}
+	\usetikzlibrary {calc,math,angles,quotes}
+	%\RequirePackage{gnuplot-lua-tikz}
+	\RequirePackage{tikz-3dplot}
+}
+
+
+\proper@define{bib}{logic}{
+	%\IfFileExists{biblatex-japanese.sty}{
+	%	\RequirePackage\RequirePackage[backend=biber,style=phys,backref=true,\proper@option{bib}]{biblatex-japanese}
+	%}{
+	%	\RequirePackage[backend=biber,style=phys,backref=true,\proper@option{bib}]{biblatex}
+	%}
+	\RequirePackage[backend=biber,style=phys,backref=true,\proper@option{bib}]{biblatex}
+	\newcommand{\printbib}[1][heading=bibintoc]{\printbibliography[##1]}
+	\proper@ifActivated{module}{
+		\newcommand{\addbib}[1]{\addbibresource{\subfix{##1}}}
+		\newcommand{\printbibsub}[1][]{\ifSubfilesClassLoaded{\printbib[##1]}{\relax}}
+	}{
+		\newcommand{\addbib}[1]{\addbibresource{##1}}
+	}
+}
+\proper@define{idx}{logic}{
+	\RequirePackage[noautomatic]{imakeidx}
+	\newcommand{\makeidx}[1][2]{\makeindex[intoc,columns=##1]}
+	\newcommand{\idxword}[2][51db15a2310af35aa4daaf3df59b7013]{\ifthenelse{\equal{##1}{51db15a2310af35aa4daaf3df59b7013}}{\index{##2}##2}{\index{##1@##2}##2}}
+	\proper@ifActivated{deco}{
+		\newcommand{\idxruby}[4][51db15a2310af35aa4daaf3df59b7013]
+		{\ifthenelse{\equal{##1}{51db15a2310af35aa4daaf3df59b7013}}{\index{##3@##4}\ruby{##4}{##2}}{\index{##3@##4}\ruby[##1]{##4}{##2}}}
+	}{
+		\relax
+	}
+	\newcommand{\printidx}{\printindex}
+	\proper@ifActivated{module}{
+		\newcommand{\printidxsub}{\ifSubfilesClassLoaded{\index{dummy-index-for-subfiles}\printidx}{\relax}}
+	}{
+		\relax
+	}
+}
+% ハイパーリンク
+\proper@define{hyref}{}{
+	% urlがハイフン入りだと改行されないのを先手でパッチを当てる(hyperrefがこれを考慮しないため)
+	\PassOptionsToPackage{hyphens}{url}
+	\RequirePackage[
+		bookmarksnumbered=true,
+		colorlinks=true,
+		citecolor=blue,
+		linkcolor=blue,
+		urlcolor=blue,
+		pdfusetitle
+	]{hyperref}
+	% uplatex用に直すやつ(実はplautopatchで入るから要らない)
+	\RequirePackage{pxjahyper}
+	\RequirePackage[nameinlink]{cleveref}
+	\crefname{equation}{式}{式}% {環境名}{単数形}{複数形} \crefで引くときの表示
+	\crefname{figure}{図}{図}% {環境名}{単数形}{複数形} \crefで引くときの表示
+	\crefname{table}{表}{表}% {環境名}{単数形}{複数形} \crefで引くときの表示
+	\crefname{algorithm}{アルゴリズム}{アルゴリズム}
+	\proper@ifActivated{code}{
+		\relax%\crefname{listing}{ソースコード}{ソースコード}
+	}{
+		\relax
+	}
+	\crefname{section}{}{}
+	\creflabelformat{section}{##2##1節##3}
+	\crefname{subsection}{}{}
+	\creflabelformat{subsection}{##2##1小節##3}
+	\newcommand{\crefpairconjunction}{・}
+	\newcommand{\crefmiddleconjunction}{・}
+	\newcommand{\creflastconjunction}{・}
+	\newcommand{\crefrangeconjunction}{〜}
+	\newcommand{\crefrangepreconjunction}{}
+	\newcommand{\crefrangepostconjunction}{}
+	\newcommand{\crefpairgroupconjunction}{，}
+	\newcommand{\crefmiddlegroupconjunction}{，}
+	\newcommand{\creflastgroupconjunction}{，}
+}
+
+%\DecSub@proper{capoid}
+%\DecSub@proper{deco}
+%\DecSub@proper{format}
+
+%\DecSub@proper{math}
+%\DecSub@proper{sci}
+
+%\DecSub@proper{float}
+%\DecSub@proper{table}
+%\DecSub@proper{figure}
+%\DecSub@proper{listings}
+
+%\DecSub@proper{hyref}
+
+
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
+
+%\DeclareOption{nodefault}{
+%	\@namedef{nodefault@proper}{
+%		nodefault
+%	}
+%}
+\DeclareVoidOption{nodefault}{\@namedef{proper@nodefault}{\relax}}
+
+\ProcessKeyvalOptions*
+
+\@ifundefined{proper@nodefault}{
+	\proper@activate{module}
+	\proper@activate{paper}
+	\proper@activate{font}
+}{\relax}
+% 自動で読み込まれる
+% module
+% paper
+% font
+
+\@namedef{proper@evaluate}#1{
+	\proper@ifActivated{#1}{
+		\proper@log{module #1 executing}
+		\csname proper@@module@#1@script\endcsname
+		\proper@log{module #1 executed}
+	}{
+		\proper@log{module #1 ignored}
+	}
+}
+\forlistloop{\proper@evaluate}{\proper@moduleList}
