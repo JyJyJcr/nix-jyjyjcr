@@ -19,6 +19,7 @@
           pathsToLink = [ "/share/zsh" ];
         };
       in {
+        packages.proper = proper;
         devShells.default = pkgs.mkShell rec {
           packages = shell-pkgs;
           #ZSH_COMP_FPATH = "${zshCompEnv}/share/zsh/site-functions";
