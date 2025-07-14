@@ -12,17 +12,17 @@
 
         proper = pkgs.callPackage ./proper/proper.nix { };
 
-        shell-pkgs = [ (pkgs.texliveFull.withPackages (_: [ proper ])) ];
-        zshCompEnv = pkgs.buildEnv {
-          name = "zsh-comp";
-          paths = shell-pkgs;
-          pathsToLink = [ "/share/zsh" ];
-        };
+        # shell-pkgs = [ (pkgs.texliveFull.withPackages (_: [ proper ])) ];
+        # zshCompEnv = pkgs.buildEnv {
+        #   name = "zsh-comp";
+        #   paths = shell-pkgs;
+        #   pathsToLink = [ "/share/zsh" ];
+        # };
       in {
         packages.proper = proper;
-        devShells.default = pkgs.mkShell rec {
-          packages = shell-pkgs;
-          #ZSH_COMP_FPATH = "${zshCompEnv}/share/zsh/site-functions";
-        };
+        # devShells.default = pkgs.mkShell rec {
+        #   packages = shell-pkgs;
+        #   #ZSH_COMP_FPATH = "${zshCompEnv}/share/zsh/site-functions";
+        # };
       });
 }
