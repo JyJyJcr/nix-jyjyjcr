@@ -1,4 +1,5 @@
-{ stdenvNoCC, lib, fetchurl, texlive }:
+{ stdenvNoCC, lib, # fetchurl,
+texlive }:
 
 stdenvNoCC.mkDerivation {
   pname = "proper";

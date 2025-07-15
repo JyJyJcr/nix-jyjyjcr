@@ -1,4 +1,4 @@
-{ stdenvNoCC, lib, fetchurl, texlive, gnuplotWithLua }:
+{ stdenvNoCC, lib, texlive, gnuplotWithLua }:
 
 stdenvNoCC.mkDerivation {
   pname = "gnuplot-lua-tikz";
@@ -10,27 +10,9 @@ stdenvNoCC.mkDerivation {
   ];
   passthru.tlDeps = with texlive; [ latex ];
 
-  # srcs = [
-  #   (fetchurl {
-  #     url = "http://mirrors.ctan.org/macros/latex/contrib/foiltex/foiltex.dtx";
-  #     hash = "sha256-/2I2xHXpZi0S988uFsGuPV6hhMw8e0U5m/P8myf42R0=";
-  #   })
-  #   (fetchurl {
-  #     url = "http://mirrors.ctan.org/macros/latex/contrib/foiltex/foiltex.ins";
-  #     hash = "sha256-KTm3pkd+Cpu0nSE2WfsNEa56PeXBaNfx/sOO2Vv0kyc=";
-  #   })
-  # ];
   src = ./.;
 
-  nativeBuildInputs = [
-    #(texliveSmall.withPackages (ps: with ps; [ cm-super hypdoc latexmk ]))
-    # multiple-outputs.sh fails if $out is not defined
-    # (writeShellScript "force-tex-output.sh" ''
-    #   out="''${tex-}"
-    # '')
-    gnuplotWithLua
-    #writableTmpDirAsHomeHook # Need a writable $HOME for latexmk
-  ];
+  nativeBuildInputs = [ gnuplotWithLua ];
 
   dontConfigure = true;
   buildPhase = ''
@@ -70,7 +52,6 @@ stdenvNoCC.mkDerivation {
       url =
         "https://sourceforge.net/p/gnuplot/gnuplot-main/ci/master/tree/Copyright";
     };
-    #maintainers = with lib.maintainers; [ veprbl ];
     platforms = lib.platforms.all;
   };
 }
