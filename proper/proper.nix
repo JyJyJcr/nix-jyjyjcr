@@ -1,5 +1,4 @@
-{ stdenvNoCC, lib, fetchurl, texlive, texliveSmall, writeShellScript
-, writableTmpDirAsHomeHook }:
+{ stdenvNoCC, lib, fetchurl, texlive, writeShellScript }:
 
 stdenvNoCC.mkDerivation {
   pname = "proper";
@@ -61,8 +60,6 @@ stdenvNoCC.mkDerivation {
 
     path="$tex/tex/latex/proper"
     mkdir -p "$path"
-    pwd
-    ls
     cp proper.sty "$path/"
     # path="$texdoc/doc/tex/latex/proper"
     # mkdir -p "$path"
