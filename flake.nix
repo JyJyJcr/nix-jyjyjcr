@@ -29,7 +29,7 @@
         packages.gnuplot-lua-tikz = gnuplot-lua-tikz;
         devShells.default = pkgs.mkShell rec {
           packages = shell-pkgs;
-          #ZSH_COMP_FPATH = "${zshCompEnv}/share/zsh/site-functions";
+          ZSH_COMP_FPATH = "${zshCompEnv}/share/zsh/site-functions";
         };
       });
 }
