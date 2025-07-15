@@ -11,18 +11,25 @@
         pkgs = import nixpkgs { inherit system; };
 
         proper = pkgs.callPackage ./proper/proper.nix { };
+        gnuplot-lua-tikz =
+          pkgs.callPackage ./gnuplot-lua-tikz/gnuplot-lua-tikz.nix {
+            gnuplotWithLua = (pkgs.gnuplot.override { withLua = true; });
+          };
 
-        # shell-pkgs = [ (pkgs.texliveFull.withPackages (_: [ proper ])) ];
-        # zshCompEnv = pkgs.buildEnv {
-        #   name = "zsh-comp";
-        #   paths = shell-pkgs;
-        #   pathsToLink = [ "/share/zsh" ];
-        # };
+        shell-pkgs =
+          [ (pkgs.texliveFull.withPackages (_: [ proper gnuplot-lua-tikz ])) ];
+        zshCompEnv = pkgs.buildEnv {
+          name = "zsh-comp";
+          paths = shell-pkgs;
+          pathsToLink = [ "/share/zsh" ];
+        };
       in {
         packages.proper = proper;
-        # devShells.default = pkgs.mkShell rec {
-        #   packages = shell-pkgs;
-        #   #ZSH_COMP_FPATH = "${zshCompEnv}/share/zsh/site-functions";
-        # };
+        packages.zshCompEnv = zshCompEnv;
+        packages.gnuplot-lua-tikz = gnuplot-lua-tikz;
+        devShells.default = pkgs.mkShell rec {
+          packages = shell-pkgs;
+          #ZSH_COMP_FPATH = "${zshCompEnv}/share/zsh/site-functions";
+        };
       });
 }
