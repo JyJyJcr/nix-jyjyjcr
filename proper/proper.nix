@@ -1,4 +1,4 @@
-{ stdenvNoCC, lib, fetchurl, texlive, writeShellScript }:
+{ stdenvNoCC, lib, fetchurl, texlive }:
 
 stdenvNoCC.mkDerivation {
   pname = "proper";
@@ -37,9 +37,9 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [
     #(texliveSmall.withPackages (ps: with ps; [ cm-super hypdoc latexmk ]))
     # multiple-outputs.sh fails if $out is not defined
-    (writeShellScript "force-tex-output.sh" ''
-      out="''${tex-}"
-    '')
+    # (writeShellScript "force-tex-output.sh" ''
+    #   out="''${tex-}"
+    # '')
     #writableTmpDirAsHomeHook # Need a writable $HOME for latexmk
   ];
 
@@ -61,9 +61,12 @@ stdenvNoCC.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    path="$tex/tex/latex/proper"
-    mkdir -p "$path"
-    cp proper.sty "$path/"
+    mkdir -p "$out/nix-support"
+    touch "$out/nix-support/proper-dummy-file"
+
+    mkdir -p "$tex/tex/latex/proper"
+    cp proper.sty "$tex/tex/latex/proper/"
+
     # path="$texdoc/doc/tex/latex/proper"
     # mkdir -p "$path"
     # cp *.pdf "$path/"
