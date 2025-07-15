@@ -4,7 +4,10 @@ stdenvNoCC.mkDerivation {
   pname = "proper";
   version = "1.0.0";
 
-  outputs = [ "tex" ];
+  outputs = [
+    "out" # we don't add anything, but buildEnv requires this to avoid errors
+    "tex"
+  ];
   passthru.tlDeps = with texlive; [ latex ];
 
   # srcs = [
