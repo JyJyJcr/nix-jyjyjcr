@@ -275,7 +275,7 @@
 		lineskip=-0.5ex,
   		frame=single
 	}
-	\renewcommand{\lstlistingname}{ソースxコード}
+	\renewcommand{\lstlistingname}{ソースコード}
 }
 
 \proper@define{float}{}{
@@ -353,7 +353,7 @@
 	\crefname{table}{表}{表}% {環境名}{単数形}{複数形} \crefで引くときの表示
 	\crefname{algorithm}{アルゴリズム}{アルゴリズム}
 	\proper@ifActivated{code}{
-		\relax%\crefname{listing}{ソースコード}{ソースコード}
+		\crefname{listing}{ソースコード}{ソースコード}
 	}{
 		\relax
 	}
