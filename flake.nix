@@ -23,6 +23,13 @@
         packages.proper = proper;
         packages.gnuplot-lua-tikz = gnuplot-lua-tikz;
         packages.alt-shell = alt-shell;
+
+        overlays.default = final: prev: {
+          proper = proper;
+          gnuplot-lua-tikz = gnuplot-lua-tikz;
+          alt-shell = alt-shell;
+        };
+
         devShells = alt-shell.mkCommonShells { } {
           packages = [
             (pkgs.texliveFull.withPackages (_: [ proper gnuplot-lua-tikz ]))
