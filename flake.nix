@@ -6,7 +6,9 @@
   };
 
   outputs = { nixpkgs, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+    let
+      #lib = { alt-shell = import ./alt-shell/alt-shell.nix; };
+    in (flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
 
@@ -16,20 +18,16 @@
             gnuplotWithLua = (pkgs.gnuplot.override { withLua = true; });
           };
 
-        shell-pkgs =
-          [ (pkgs.texliveFull.withPackages (_: [ proper gnuplot-lua-tikz ])) ];
-        zshCompEnv = pkgs.buildEnv {
-          name = "zsh-comp";
-          paths = shell-pkgs;
-          pathsToLink = [ "/share/zsh" ];
-        };
+        alt-shell = pkgs.callPackage ./alt-shell/alt-shell.nix { };
       in {
         packages.proper = proper;
-        packages.zshCompEnv = zshCompEnv;
         packages.gnuplot-lua-tikz = gnuplot-lua-tikz;
-        devShells.default = pkgs.mkShell rec {
-          packages = shell-pkgs;
-          ZSH_COMP_FPATH = "${zshCompEnv}/share/zsh/site-functions";
+        packages.alt-shell = alt-shell;
+        devShells = alt-shell.mkCommonShells { } {
+          packages = [
+            (pkgs.texliveFull.withPackages (_: [ proper gnuplot-lua-tikz ]))
+          ];
+          buildInputs = [ pkgs.ghq ];
         };
-      });
+      }));
 }
