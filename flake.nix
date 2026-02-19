@@ -1,7 +1,7 @@
 {
   inputs = {
-    #nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    #nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -24,17 +24,20 @@
         packages.gnuplot-lua-tikz = gnuplot-lua-tikz;
         packages.alt-shell = alt-shell;
 
-        overlays.default = final: prev: {
-          proper = proper;
-          gnuplot-lua-tikz = gnuplot-lua-tikz;
-          alt-shell = alt-shell;
-        };
-
         devShells = alt-shell.mkCommonShells { } {
           packages = [
             (pkgs.texliveFull.withPackages (_: [ proper gnuplot-lua-tikz ]))
           ];
           buildInputs = [ pkgs.ghq ];
         };
-      }));
+      })) // {
+        overlays.default = final: prev: {
+          proper = prev.callPackage ./proper/proper.nix { };
+          gnuplot-lua-tikz =
+            prev.callPackage ./gnuplot-lua-tikz/gnuplot-lua-tikz.nix {
+              gnuplotWithLua = (prev.gnuplot.override { withLua = true; });
+            };
+          alt-shell = prev.callPackage ./alt-shell/alt-shell.nix { };
+        };
+      };
 }
