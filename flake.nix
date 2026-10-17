@@ -44,5 +44,15 @@
     ))
     // {
       overlays.default = overlay;
+      templates = {
+        sideflake = {
+          path = ./templates/sideflake;
+          description = "sideflake override template";
+        };
+        custom = {
+          path = ./templates/custom;
+          description = "temporary custom project template";
+        };
+      };
     };
 }
