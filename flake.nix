@@ -45,10 +45,15 @@
     // {
       overlays.default = overlay;
       templates = {
-        sideflake = {
-          path = ./templates/sideflake;
+        sideflake-override = {
+          path = ./templates/sideflake/override;
           description = "sideflake override template";
         };
+        sideflake-standalone = {
+          path = ./templates/sideflake/standalone;
+          description = "sideflake standalone template";
+        };
+
         custom = {
           path = ./templates/custom;
           description = "temporary custom project template";
