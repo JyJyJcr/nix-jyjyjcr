@@ -54,9 +54,9 @@
           description = "sideflake standalone template";
         };
 
-        custom = {
-          path = ./templates/custom;
-          description = "temporary custom project template";
+        base = {
+          path = ./templates/base;
+          description = "base project template";
         };
       };
     };
