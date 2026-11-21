@@ -14,6 +14,7 @@
         gnuplot-lua-tikz = prev.callPackage ./gnuplot-lua-tikz/gnuplot-lua-tikz.nix {
           gnuplotWithLua = (prev.gnuplot.override { withLua = true; });
         };
+        agent-skill-set = prev.callPackage ./agent-skill-set/agent-skill-set.nix { };
         alt-shell = prev.callPackage ./alt-shell/alt-shell.nix { };
       };
     in
@@ -28,6 +29,7 @@
       rec {
         packages.proper = pkgs.proper;
         packages.gnuplot-lua-tikz = pkgs.gnuplot-lua-tikz;
+        packages.agent-skill-set = pkgs.agent-skill-set;
         packages.alt-shell = pkgs.alt-shell;
 
         devShells.original = pkgs.mkShell {
